@@ -1,1 +1,639 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GAMEPORTAL</title>
+<style>
+:root {
+  --bg:#090a10;
+  --panel:#121520;
+  --panel2:#191e2b;
+  --text:#f4f5fa;
+  --muted:#9299aa;
+  --accent:#ed304e;
+  --border:#292e3c;
+}
+* {box-sizing:border-box}
+body {
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Inter,system-ui,Arial,sans-serif;
+}
+button,input {font:inherit}
+button {cursor:pointer}
+.app {min-height:100vh;display:flex}
+.sidebar {
+  width:235px;
+  padding:24px 16px;
+  background:#0d1018;
+  border-right:1px solid var(--border);
+  position:fixed;inset:0 auto 0 0;
+  display:flex;flex-direction:column;gap:24px;
+  z-index:5;
+}
+.logo {font-size:23px;font-weight:900;letter-spacing:-1px}
+.logo span {color:var(--accent)}
+.logo small {display:block;color:var(--muted);font-size:10px;letter-spacing:3px;margin-top:5px}
+.nav {display:grid;gap:8px}
+.nav button {
+  border:0;background:transparent;color:var(--muted);
+  text-align:left;padding:13px;border-radius:10px;
+}
+.nav button.active,.nav button:hover {
+  background:#28141d;color:white;
+}
+.nav button.active {border-left:3px solid var(--accent)}
+.sidebar-bottom {margin-top:auto;color:var(--muted);font-size:12px}
+.main {margin-left:235px;width:calc(100% - 235px);padding:28px 34px}
+.topbar {display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:30px}
+.topbar h1 {font-size:26px;margin:0}
+.topbar p {color:var(--muted);font-size:13px;margin:6px 0 0}
+.top-actions {display:flex;gap:9px}
+.btn {
+  border:1px solid var(--border);background:var(--panel2);
+  color:white;border-radius:9px;padding:11px 15px;
+}
+.btn:hover {border-color:var(--accent)}
+.btn.primary {background:var(--accent);border-color:var(--accent);font-weight:700}
+.btn.danger {color:#ff7185}
+.hero {
+  padding:30px;border:1px solid #48212c;border-radius:17px;
+  background:linear-gradient(120deg,#27111b,#151725 65%,#10131d);
+  margin-bottom:25px;
+}
+.hero h2 {font-size:30px;margin:0 0 9px}
+.hero p {color:#c1c3cf;max-width:600px;line-height:1.6}
+.stats {display:flex;gap:35px;margin-top:22px}
+.stat strong {font-size:23px;display:block}
+.stat span {color:var(--muted);font-size:12px}
+.section-head {display:flex;justify-content:space-between;align-items:center;gap:12px;margin:25px 0 16px}
+.section-head h2 {font-size:19px;margin:0}
+.search {
+  width:min(280px,100%);background:var(--panel);
+  border:1px solid var(--border);border-radius:9px;
+  color:var(--text);padding:12px;outline:none;
+}
+.search:focus,input:focus {border-color:var(--accent)}
+.game-grid {
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));
+  gap:16px;
+}
+.game-card {
+  border:1px solid var(--border);background:var(--panel);
+  border-radius:14px;overflow:hidden;min-width:0;
+}
+.game-art {
+  height:125px;background:linear-gradient(135deg,#391626,#161d38);
+  display:grid;place-items:center;font-size:42px;
+}
+.game-info {padding:15px}
+.game-info h3 {margin:0 0 5px;font-size:16px;overflow-wrap:anywhere}
+.game-info p {font-size:12px;color:var(--muted);margin:0 0 14px}
+.card-actions {display:flex;gap:8px}
+.card-actions button {flex:1;padding:9px 5px;font-size:12px}
+.empty {
+  border:1px dashed var(--border);border-radius:14px;
+  padding:45px 20px;text-align:center;color:var(--muted);
+}
+.view {display:none}
+.view.active {display:block}
+.browser-bar {display:flex;gap:9px;margin:20px 0}
+.browser-bar input {
+  flex:1;min-width:0;background:var(--panel);
+  border:1px solid var(--border);border-radius:9px;
+  color:white;padding:12px;
+}
+.browser-frame {
+  width:100%;height:65vh;background:white;border:1px solid var(--border);
+  border-radius:12px;
+}
+.browser-note {font-size:12px;color:var(--muted);line-height:1.6}
+.game-player {
+  width:100%;height:68vh;border:1px solid var(--border);
+  background:#080808;border-radius:12px;
+}
+.player-actions {display:flex;justify-content:space-between;gap:10px;margin:14px 0}
+.panel {
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:14px;padding:20px;margin-bottom:16px;
+}
+.panel p {color:var(--muted);line-height:1.6}
+input[type=file] {display:none}
+.file-label {
+  display:inline-block;background:var(--accent);color:white;
+  border-radius:9px;padding:12px 17px;cursor:pointer;font-weight:700;
+}
+.toast {
+  position:fixed;bottom:22px;right:22px;z-index:20;
+  background:#222b35;border:1px solid #414d5d;
+  padding:13px 18px;border-radius:10px;
+  opacity:0;transform:translateY(10px);transition:.2s;
+  pointer-events:none;
+}
+.toast.show {opacity:1;transform:translateY(0)}
+.light {
+  --bg:#f1f3f8;--panel:#fff;--panel2:#e8eaf1;
+  --text:#171925;--muted:#656d7e;--border:#d8dce6;
+}
+.light .sidebar {background:#fff}
+.light .nav button.active {color:#9e1631}
+.mobile-menu {display:none}
+@media(max-width:760px) {
+  .sidebar {width:220px;transform:translateX(-100%);transition:.2s}
+  .sidebar.open {transform:translateX(0)}
+  .main {margin:0;width:100%;padding:20px 16px}
+  .mobile-menu {display:inline-block}
+  .topbar h1 {font-size:21px}
+  .hero {padding:22px}
+  .hero h2 {font-size:24px}
+  .stats {gap:20px}
+  .top-actions .btn {padding:9px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<aside class="sidebar" id="sidebar">
+  <div class="logo">GAME<span>PORTAL</span>
+    <small>GAMES & WEB HUB</small>
+  </div>
+  <nav class="nav">
+    <button class="active" data-view="home">⌂ &nbsp; Dashboard</button>
+    <button data-view="library">▣ &nbsp; Game Library</button>
+    <button data-view="browser">◎ &nbsp; Website Browser</button>
+    <button data-view="settings">⚙ &nbsp; Settings</button>
+  </nav>
+  <div class="sidebar-bottom">
+    <div>GAMEPORTAL v1.0</div>
+    <div>Personal game launcher</div>
+  </div>
+</aside>
+
+<main class="main">
+<header class="topbar">
+  <div style="display:flex;align-items:center;gap:12px">
+    <button class="btn mobile-menu" id="menuBtn">☰</button>
+    <div>
+      <h1 id="pageTitle">Dashboard</h1>
+      <p>Your games. Your web. One place.</p>
+    </div>
+  </div>
+  <div class="top-actions">
+    <button class="btn" id="themeBtn">◐ Theme</button>
+    <label class="file-label" for="gameUpload">+ Import Game</label>
+    <input id="gameUpload" type="file" accept=".html,.htm,text/html">
+  </div>
+</header>
+
+<section class="view active" id="home">
+  <div class="hero">
+    <h2>Your personal game hub.</h2>
+    <p>Import browser games, keep them organized, and explore websites from one modern dashboard.</p>
+    <button class="btn primary" id="heroImport">Import a Game →</button>
+    <div class="stats">
+      <div class="stat"><strong id="gameCount">0</strong><span>Games imported</span></div>
+      <div class="stat"><strong>∞</strong><span>Websites to explore</span></div>
+      <div class="stat"><strong>100%</strong><span>Your local library</span></div>
+    </div>
+  </div>
+  <div class="section-head">
+    <h2>Recently added</h2>
+    <button class="btn" data-goto="library">View library →</button>
+  </div>
+  <div class="game-grid" id="recentGames"></div>
+  <div class="section-head"><h2>Quick access</h2></div>
+  <div class="game-grid">
+    <div class="panel">
+      <h3>🎮 Game Library</h3>
+      <p>Import and launch your HTML games.</p>
+      <button class="btn primary" data-goto="library">Open library</button>
+    </div>
+    <div class="panel">
+      <h3>🌐 Website Browser</h3>
+      <p>Visit websites or open them in a new tab.</p>
+      <button class="btn primary" data-goto="browser">Open browser</button>
+    </div>
+  </div>
+</section>
+
+<section class="view" id="library">
+  <div class="section-head">
+    <h2>Your games</h2>
+    <input class="search" id="gameSearch" placeholder="Search games...">
+  </div>
+  <div class="game-grid" id="allGames"></div>
+  <div class="panel" style="margin-top:22px">
+    <h3>Import another game</h3>
+    <p>Select a standalone HTML game file from your device. It will be saved in this browser's local database.</p>
+    <label class="file-label" for="gameUpload">Choose HTML game</label>
+  </div>
+</section>
+
+<section class="view" id="browser">
+  <div class="panel">
+    <h2>Website Browser</h2>
+    <p>Enter a website address. Some sites prevent being displayed inside another website.</p>
+    <form class="browser-bar" id="urlForm">
+      <input id="urlInput" type="text" placeholder="https://example.com" autocomplete="url">
+      <button class="btn primary" type="submit">Go</button>
+    </form>
+    <div class="browser-bar" style="margin-top:0">
+      <button class="btn" id="openExternal">Open in new tab ↗</button>
+      <button class="btn" id="reloadWeb">Reload</button>
+    </div>
+    <p class="browser-note" id="browserStatus">Enter an address to get started. If a site blocks embedding, use Open in new tab.</p>
+  </div>
+  <iframe class="browser-frame" id="webFrame" title="Website preview"
+    sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
+    referrerpolicy="no-referrer"></iframe>
+</section>
+
+<section class="view" id="player">
+  <div class="section-head">
+    <h2 id="playingTitle">Game Player</h2>
+    <button class="btn" data-goto="library">← Back to library</button>
+  </div>
+  <div class="player-actions">
+    <span class="browser-note">Your imported game runs in an isolated frame.</span>
+    <button class="btn primary" id="fullscreenBtn">⛶ Fullscreen</button>
+  </div>
+  <iframe class="game-player" id="gameFrame" title="Imported game"
+    sandbox="allow-scripts allow-forms allow-modals allow-pointer-lock allow-downloads"
+    allow="fullscreen" allowfullscreen></iframe>
+</section>
+
+<section class="view" id="settings">
+  <div class="panel">
+    <h2>Settings</h2>
+    <p>Customize your GamePortal experience.</p>
+    <button class="btn" id="settingsTheme">Toggle light / dark theme</button>
+  </div>
+  <div class="panel">
+    <h3>Storage information</h3>
+    <p>Your imported game files are saved in IndexedDB on this browser and device.</p>
+    <p>Clearing browser site data may delete your library. Export or keep backups of your original game files.</p>
+  </div>
+  <div class="panel">
+    <h3>About GamePortal</h3>
+    <p>Version 1.0 · HTML, CSS, JavaScript · No account required.</p>
+  </div>
+</section>
+
+</main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+// ---------- DATABASE ----------
+const DB_NAME = "GamePortalDB";
+const STORE = "games";
+let db;
+
+function openDatabase() {
+  return new Promise((resolve,reject) => {
+    const request = indexedDB.open(DB_NAME,1);
+    request.onupgradeneeded = () => {
+      const database = request.result;
+      if (!database.objectStoreNames.contains(STORE)) {
+        database.createObjectStore(STORE,{keyPath:"id"});
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+function transaction(mode,action) {
+  return new Promise((resolve,reject) => {
+    const tx = db.transaction(STORE,mode);
+    const store = tx.objectStore(STORE);
+    let request;
+    try { request = action(store); }
+    catch(error) { reject(error); return; }
+    tx.oncomplete = () => resolve(request?.result);
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
+  });
+}
+
+const getGames = () => transaction("readonly",s=>s.getAll());
+const saveGame = game => transaction("readwrite",s=>s.put(game));
+const removeGame = id => transaction("readwrite",s=>s.delete(id));
+
+// ---------- ELEMENTS ----------
+const $ = id => document.getElementById(id);
+const upload = $("gameUpload");
+let currentGame = null;
+let currentURL = "";
+
+function toast(message) {
+  const el = $("toast");
+  el.textContent = message;
+  el.classList.add("show");
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(()=>el.classList.remove("show"),2600);
+}
+
+function escapeText(value) {
+  return String(value ?? "");
+}
+
+// ---------- NAVIGATION ----------
+function showView(name) {
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  const target = $(name);
+  if (!target) return;
+  target.classList.add("active");
+
+  document.querySelectorAll(".nav button").forEach(b=>
+    b.classList.toggle("active",b.dataset.view===name)
+  );
+
+  const titles = {
+    home:"Dashboard",library:"Game Library",
+    browser:"Website Browser",settings:"Settings",player:"Game Player"
+  };
+  $("pageTitle").textContent = titles[name] || "GamePortal";
+  $("sidebar").classList.remove("open");
+  if (name==="library" || name==="home") renderGames();
+}
+
+document.querySelectorAll("[data-view]").forEach(btn=>{
+  btn.addEventListener("click",()=>showView(btn.dataset.view));
+});
+document.querySelectorAll("[data-goto]").forEach(btn=>{
+  btn.addEventListener("click",()=>showView(btn.dataset.goto));
+});
+
+$("menuBtn").addEventListener("click",()=>$("sidebar").classList.toggle("open"));
+
+// ---------- IMPORT GAMES ----------
+upload.addEventListener("change",async event=>{
+  const files = [...event.target.files];
+  upload.value = "";
+
+  for (const file of files) {
+    if (!/\.(html|htm)$/i.test(file.name)) {
+      toast("Please select an HTML game file.");
+      continue;
+    }
+
+    if (file.size > 10*1024*1024) {
+      toast("Game file is too large (10 MB maximum).");
+      continue;
+    }
+
+    try {
+      const content = await file.text();
+      const game = {
+        id: crypto.randomUUID(),
+        name: file.name.replace(/\.(html|htm)$/i,""),
+        filename:file.name,
+        content,
+        added:Date.now()
+      };
+      await saveGame(game);
+      toast("Game imported successfully!");
+    } catch(error) {
+      console.error(error);
+      toast("Could not import this game.");
+    }
+  }
+  renderGames();
+});
+
+$("heroImport").addEventListener("click",()=>upload.click());
+
+// ---------- RENDER GAME LIBRARY ----------
+function makeGameCard(game) {
+  const card = document.createElement("article");
+  card.className = "game-card";
+
+  const art = document.createElement("div");
+  art.className = "game-art";
+  art.textContent = "🎮";
+
+  const info = document.createElement("div");
+  info.className = "game-info";
+
+  const title = document.createElement("h3");
+  title.textContent = escapeText(game.name);
+
+  const description = document.createElement("p");
+  description.textContent = "Imported HTML game";
+
+  const actions = document.createElement("div");
+  actions.className = "card-actions";
+
+  const play = document.createElement("button");
+  play.className = "btn primary";
+  play.textContent = "Play";
+  play.addEventListener("click",()=>launchGame(game.id));
+
+  const remove = document.createElement("button");
+  remove.className = "btn danger";
+  remove.textContent = "Delete";
+  remove.addEventListener("click",async()=>{
+    if (!confirm("Delete "+game.name+" from your library?")) return;
+    await removeGame(game.id);
+    if (currentGame===game.id) {
+      $("gameFrame").srcdoc = "";
+      currentGame = null;
+    }
+    toast("Game deleted.");
+    renderGames();
+  });
+
+  actions.append(play,remove);
+  info.append(title,description,actions);
+  card.append(art,info);
+  return card;
+}
+
+function renderEmpty(container,message) {
+  container.replaceChildren();
+  const empty = document.createElement("div");
+  empty.className = "empty";
+  empty.textContent = message;
+  container.append(empty);
+}
+
+async function renderGames() {
+  try {
+    const games = (await getGames()).sort((a,b)=>b.added-a.added);
+    $("gameCount").textContent = games.length;
+
+    const recent = $("recentGames");
+    const all = $("allGames");
+    recent.replaceChildren();
+    all.replaceChildren();
+
+    const query = $("gameSearch").value.trim().toLowerCase();
+    const filtered = games.filter(g=>g.name.toLowerCase().includes(query));
+
+    if (!games.length) {
+      renderEmpty(recent,"No games yet. Import your first HTML game!");
+      renderEmpty(all,"Your library is empty. Import a game to get started.");
+      return;
+    }
+
+    games.slice(0,4).forEach(g=>recent.append(makeGameCard(g)));
+
+    if (!filtered.length) {
+      renderEmpty(all,"No games match your search.");
+    } else {
+      filtered.forEach(g=>all.append(makeGameCard(g)));
+    }
+  } catch(error) {
+    console.error(error);
+    toast("Could not load your game library.");
+  }
+}
+
+$("gameSearch").addEventListener("input",renderGames);
+
+// ---------- GAME PLAYER ----------
+async function launchGame(id) {
+  const games = await getGames();
+  const game = games.find(g=>g.id===id);
+  if (!game) return toast("Game not found.");
+
+  currentGame = id;
+  $("playingTitle").textContent = game.name;
+
+  // The sandbox keeps imported games separated from the portal.
+  $("gameFrame").srcdoc = game.content;
+  showView("player");
+}
+
+$("fullscreenBtn").addEventListener("click",async()=>{
+  const frame = $("gameFrame");
+  try {
+    if (frame.requestFullscreen) await frame.requestFullscreen();
+    else toast("Fullscreen is not supported by this browser.");
+  } catch(error) {
+    toast("Fullscreen was blocked by the browser.");
+  }
+});
+
+// ---------- WEBSITE BROWSER ----------
+function normalizeURL(value) {
+  let url = value.trim();
+  if (!url) throw new Error("Enter a website address.");
+
+  if (!/^https?:\/\//i.test(url)) url = "https://"+url;
+
+  const parsed = new URL(url);
+  if (!["http:","https:"].includes(parsed.protocol)) {
+    throw new Error("Only HTTP and HTTPS websites are supported.");
+  }
+  return parsed.href;
+}
+
+function visitWebsite() {
+  try {
+    currentURL = normalizeURL($("urlInput").value);
+    $("urlInput").value = currentURL;
+    $("webFrame").src = currentURL;
+    $("browserStatus").textContent =
+      "Attempting to load "+currentURL+
+      ". If the site blocks embedding, open it in a new tab.";
+    showView("browser");
+  } catch(error) {
+    toast(error.message);
+  }
+}
+
+$("urlForm").addEventListener("submit",event=>{
+  event.preventDefault();
+  visitWebsite();
+});
+
+$("openExternal").addEventListener("click",()=>{
+  if (!currentURL) return toast("Enter a website address first.");
+  const tab = window.open(currentURL,"_blank","noopener,noreferrer");
+  if (!tab) toast("Your browser blocked the new tab. Allow popups to continue.");
+});
+
+$("reloadWeb").addEventListener("click",()=>{
+  if (!currentURL) return toast("Enter a website first.");
+  $("webFrame").src = currentURL;
+});
+
+// ---------- THEMES ----------
+function toggleTheme() {
+  document.body.classList.toggle("light");
+  const light = document.body.classList.contains("light");
+  localStorage.setItem("gameportal-theme",light?"light":"dark");
+  toast(light?"Light theme enabled":"Dark theme enabled");
+}
+
+$("themeBtn").addEventListener("click",toggleTheme);
+$("settingsTheme").addEventListener("click",toggleTheme);
+
+if (localStorage.getItem("gameportal-theme")==="light") {
+  document.body.classList.add("light");
+}
+
+// ---------- SAMPLE GAME ----------
+async function addSampleGame() {
+  const games = await getGames();
+  if (games.some(g=>g.id==="gameportal-demo")) return;
+
+  await saveGame({
+    id:"gameportal-demo",
+    name:"Neon Clicker",
+    filename:"neon-clicker.html",
+    added:Date.now(),
+    content:`<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+body{background:#090b18;color:white;font-family:Arial;text-align:center;padding:30px}
+h1{color:#ff3d70}
+button{background:#ff315c;color:white;border:0;padding:20px 35px;border-radius:12px;font-size:20px;cursor:pointer}
+#score{font-size:45px;margin:25px}
+</style>
+</head>
+<body>
+<h1>NEON CLICKER</h1>
+<p>Click the button to earn points!</p>
+<div id="score">0</div>
+<button id="clicker">CLICK ME!</button>
+<script>
+let score=0;
+document.getElementById('clicker').onclick=()=>{
+ score++;
+ document.getElementById('score').textContent=score;
+};
+<\/script>
+</body>
+</html>`
+  });
+}
+
+// ---------- STARTUP ----------
+async function init() {
+  try {
+    if (!window.indexedDB) throw new Error("IndexedDB unavailable");
+    db = await openDatabase();
+    await addSampleGame();
+    await renderGames();
+  } catch(error) {
+    console.error(error);
+    toast("Storage initialization failed. Try another browser.");
+  }
+}
+
+init();
+</script>
+</body>
+</html>
+
